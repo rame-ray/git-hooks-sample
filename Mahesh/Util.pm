@@ -256,7 +256,7 @@ if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
   }
 
     $message .=  "\n\n ** END of Analysis ** \n" ; 
-    print $message , "\n" ;
+    print $message , "\n" if ($EXITCODE > 0) ;
     exit $EXITCODE ;
 }
 
