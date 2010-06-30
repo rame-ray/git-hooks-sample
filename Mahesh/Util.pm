@@ -237,12 +237,23 @@ if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
 
     foreach $the_commit (keys  %{$commit->{'allcommits'}} ) {
 
-    my @causes = keys %{$commit->{'allcommits'}->{$the_commit}->{'validation'}} ;
-    $message .=  $the_commit . "\t:" . $commit->{'allcommits'}->{$the_commit}->{'validation'}->{'missing'} ;
-    #$message .=  $the_commit . $the_commit->$validation->{'missing'} . "\n"  ;
-    $message .=  "\n" ;
-    $EXITCODE=3;
- }
+    if (exists(
+                 $commit->{'allcommits'}->
+	         {$the_commit}->
+	         {'validation'}->
+	         {'missing'}
+	      )
+    ) { 
+
+         $message .=  $the_commit . "\t:" . 
+	 $commit->{'allcommits'}->
+	 {$the_commit}->
+	 {'validation'}->
+	 {'missing'} ;
+         $message .=  "\n" ;
+         $EXITCODE=3;
+    }
+  }
 
     $message .=  "\n\n ** END of Analysis ** \n" ; 
     print $message , "\n" ;
