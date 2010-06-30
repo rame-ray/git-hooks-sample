@@ -33,7 +33,7 @@ sub getonbits($){
  my $val=shift;
  my $bit_array=();
 
- map {push @{$bit_array} ,   +n_th_bit_on($val,$_) } 0..3 ;
+ map {push @{$bit_array} ,   +n_th_bit_on($val,$_) } 0..8 ;
  return $bit_array ;
 }
 
@@ -155,12 +155,14 @@ my $commit = shift;
       foreach $test (@{$control_array}) {
          next unless (defined($test)); 
          my $param_to_test = $global_config->{'requirement'}->{$test} ;
-         $validation->{$param_to_test} = undef 
                       unless (exists 
                                $commit->{'allcommits'}->
                                {$commit_under_exam}->
                                {$param_to_test}
-                              ) ;
+                              ) {
+                                    $validation->{'missing'} = $validation->{'missing'} . " : " . $param_to_test ; 
+                                 ;
+                                }
          
       }
       $commit->{'allcommits'}->{$commit_under_exam}->{'validation'} = $validation ;
@@ -207,6 +209,43 @@ if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
     $message .=  "\n\n ** END of Analysis ** \n" ; 
     print $message , "\n" if ($EXITCODE > 0) ;
 
+    exit $EXITCODE ;
+}
+
+sub examineCommits(%) {
+#Given Analyzed commit hash it will determine GO / NO Go and send an email.
+
+my $input = shift ;
+my $commit = $input->{'commits'} ;
+my $EXITCODE = 0 ;
+my $message = undef ;
+
+if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
+   $message .=  "\nBranch $commit->{'branch'} is Locked for Push\n"  ;
+   $EXITCODE = 1;
+} elsif ($commit->{'metadata'}->{'txn'} =~/NO_ACCESS/) {
+   $message .=  "\nUser $commit->{'user'} has no Push permission on branch Branch $commit->{'branch'}\n"  ;
+   $EXITCODE=2;
+}
+
+# - See which conditions are not met.
+
+    $message .=  "---------------------------------------------------------------------\n";
+    $message .=  "Commit Analysis for Compliance\n";
+    $message .=  "           Commit                                missing Data        \n" ;
+    $message .=  "---------------------------------------------------------------------\n" ;
+
+    foreach $the_commit (keys  %{$commit->{'allcommits'}} ) {
+
+    my @causes = keys %{$commit->{'allcommits'}->{$the_commit}->{'validation'}} ;
+    $message .=  $the_commit . "\t:" . $commit->{'allcommits'}->{$the_commit}->{'validation'}->{'missing'} ;
+    #$message .=  $the_commit . $the_commit->$validation->{'missing'} . "\n"  ;
+    $message .=  "\n" ;
+    $EXITCODE=3;
+ }
+
+    $message .=  "\n\n ** END of Analysis ** \n" ; 
+    print $message , "\n" ;
     exit $EXITCODE ;
 }
 
