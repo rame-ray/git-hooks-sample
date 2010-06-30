@@ -33,7 +33,7 @@ sub getonbits($){
  my $val=shift;
  my $bit_array=();
 
- map {push @{$bit_array} ,   +n_th_bit_on($val,$_) } 0..8 ;
+ map {push @{$bit_array} ,   +n_th_bit_on($val,$_) } 0..7 ;
  return $bit_array ;
 }
 
