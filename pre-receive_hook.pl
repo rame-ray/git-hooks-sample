@@ -33,4 +33,3 @@ my $commits = getCommits($input_hash) ;
 
 examineCommits({commits => $commits}) ;
 
-vaLidate({commits => $commits}) ;

@@ -58,4 +58,12 @@ $branches->{'foobar'} = {
 'owner' => 'owner_bugfix@example.com',
 } ; 
 
+$branches->{'aparna'} = {
+'deny' => ['*', 'tom'],
+'allow' => ['crap' , 'chor', 'mvaidya'],
+'controls' => '7' ,
+'email' => 'branch_bugfix@example.com',
+'owner' => 'owner_bugfix@example.com',
+} ; 
+
 1;

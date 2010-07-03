@@ -70,19 +70,21 @@ sub getCommits(%)  {
     while(<GITPTR>){
        chomp;
        s/(^\s+)(.+)(\s+)$/$2/g;
-
-       if (/(commit)(\s+)(.{40})/) {
+       if (/(commit)(\s)(.{40})$/) {
          $commit_hash = {} ;
          $return_hash->{'allcommits'}->{$3} = $commit_hash ;
        }
        elsif (/(AutoPR)(\s+)?(:)(\s+)?(\d+)/) {
+         next if $5 =~ /^$/;
          $commit_hash->{'AutoPR'} = $5;
        }
        elsif (/(Description)(\s+)?(:)(\s+)?(.*)/) {
+         next if $5 =~ /^$/;
          $commit_hash->{'Description'} = $5;
          push @{$commit_array} , $commit_hash  if (defined ($commit_hash)) ;
        }
        elsif (/(Reviewer)(\s+)?(:)(\s+)?(.*)/) {
+         next if $5 =~ /^$/;
          $commit_hash->{'Reviewer'} = $5;
        }
     }
@@ -107,7 +109,6 @@ sub _tXnvaLidate(%){
 #$verbose = 1;
 
 my $commit = shift ;
-logger Dumper($commit) ;
 my $deny_array = $commit->{'metadata'}->{'deny'} ; 
 my $allow_array = $commit->{'metadata'}->{'allow'} ; 
 
@@ -144,6 +145,8 @@ my $user = $commit->{'user'} ;
 
 sub _vaLidate(%) {
 my $commit = shift;
+
+logger Dumper($commit) ;
 # Validate give commit collection
 
 # - Check if /per commit all controls met.
@@ -153,8 +156,9 @@ my $commit = shift;
 
       my $control_array = getonbits($commit->{'metadata'}->{'controls'}) ;
       foreach $test (@{$control_array}) {
-         next unless (defined($test)); 
-         my $param_to_test = $global_config->{'requirement'}->{$test} ;
+        chomp($test) ;
+        next if $test =~ /^$/;
+        my $param_to_test = $global_config->{'requirement'}->{$test} ;
                       unless (exists 
                                $commit->{'allcommits'}->
                                {$commit_under_exam}->
@@ -165,52 +169,13 @@ my $commit = shift;
                                 }
          
       }
+      logger  Dumper($validation) ;
       $commit->{'allcommits'}->{$commit_under_exam}->{'validation'} = $validation ;
    } 
 
 }
 
 
-
-sub examineCommits(%) {
-#Given Analyzed commit hash it will determine GO / NO Go and send an email.
-
-my $input = shift ;
-my $commit = $input->{'commits'} ;
-my $EXITCODE = 0 ;
-my $message = undef ;
-
-if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
-   $message .=  "\nBranch $commit->{'branch'} is Locked for Push\n"  ;
-   $EXITCODE = 1;
-} elsif ($commit->{'metadata'}->{'txn'} =~/NO_ACCESS/) {
-   $message .=  "\nUser $commit->{'user'} has no Push permission on Branch $commit->{'branch'}\n"  ;
-   $EXITCODE=2;
-}
-
-# - See which conditions are not met.
-
-    $message .=  "---------------------------------------------------------------------\n";
-    $message .=  "Commit Analysis for Compliance\n";
-    $message .=  "           Commit                                missing Data        \n" ;
-    $message .=  "---------------------------------------------------------------------\n" ;
-
-    foreach $the_commit (keys  %{$commit->{'allcommits'}} ) {
-
-    my @causes = keys %{$commit->{'allcommits'}->{$the_commit}->{'validation'}} ;
-    $message .=  $the_commit . "\t" ;
-    foreach (@causes) {
-     $message .= $_ . "\t";
-     $EXITCODE=3;
-    } 
-    $message .=  "\n" ;
- }
-
-    $message .=  "\n\n ** END of Analysis ** \n" ; 
-    print $message , "\n" if ($EXITCODE > 0) ;
-
-    exit $EXITCODE ;
-}
 
 sub examineCommits(%) {
 #Given Analyzed commit hash it will determine GO / NO Go and send an email.
