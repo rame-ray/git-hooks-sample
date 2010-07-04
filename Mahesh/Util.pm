@@ -120,7 +120,7 @@ my $user = $commit->{'user'} ;
     if ($item =~/\*/) {
          $commit->{'metadata'}->{'txn'} = 'DENY' ;
          return ;
-    } elsif($item =~ /$user/) {
+    } elsif($item =~ /\b$user\b/) {
          $commit->{'metadata'}->{'txn'} = 'NO_ACCESS' ;
          return ;
     }
@@ -134,7 +134,7 @@ my $user = $commit->{'user'} ;
    logger "item -> $item " ;
    logger "user -> $user " ;
 
-    if($item =~ /$user/) {
+    if($item =~ /\b$user\b/) {
          $commit->{'metadata'}->{'txn'} = 'OK' ;
          return ;
     }
