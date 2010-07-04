@@ -19,9 +19,9 @@ BEGIN {
 #
 # Controls - Bit Mask (Bit Position)
 #          0 AutoPR
-#          1 Shortlist
+#          1 Description
 #          2 Reviewer
-#          3 Special Flag 
+#          3 Shortlist
 #           +---+---+---+---+
 #           | 3 | 2 | 1 | 0 |
 #           +---+---+---+---+
