@@ -1,6 +1,7 @@
 package Mahesh::Util;  
 
 use Mahesh::Config ;
+use Mahesh::TagConfig ;
 use Mahesh::GlobalConfig ;
 use Data::Dumper ;
 
@@ -16,7 +17,7 @@ BEGIN {
                  logger 
                  examineCommits
                  $verbose) ;
-   our  $verbose = 0;
+   our  $verbose = 1;
 
 }
 
@@ -55,16 +56,21 @@ sub getCommits(%)  {
     our $commit_array = () ;
     our $return_hash = {} ;
 
-    my $command = "git rev-list --pretty " .  $input->{'from'}  . '   ^' . $input->{'to'} . ' |' ;
+    my $command = "git rev-list --pretty " .  $input->{'to'}  . '   ^' . $input->{'from'} . ' |' ;
     $command = "git log  -1 $input->{'from'} |"  if ($input->{'to'} =~ /0{40}/) ;
   
 
   
     $return_hash->{'branch'} = $input->{'branch'} ;
+    $return_hash->{'from'} = $input->{'from'} ;
+    $return_hash->{'to'} = $input->{'to'} ;
+    $return_hash->{'tag'} = $input->{'tag'} ;
     $return_hash->{'user'} = $input->{'user'};
     $return_hash->{'metadata'} = 
              $config->{'branch'}->{$return_hash->{'branch'}};
 
+    print "Metadata for this branch\n" ;
+    print Dumper($config) , "\n" ;
 
     open (GITPTR, $command) ;
     while(<GITPTR>){
@@ -88,6 +94,10 @@ sub getCommits(%)  {
          $commit_hash->{'Reviewer'} = $5;
        }
     }
+
+    #- Special Case Shortlist ; To test if this bug is on shortlist.
+    $commit_hash->{'ShortList'} = _isOnShortList($commit_hash) ;
+
     close(GITPTR) ;
 
     #- Also Validate those commits - 
@@ -103,20 +113,22 @@ sub _tXnvaLidate(%){
 # Cases - there should noy be "*" in deny; 
 #       - user who is pushing should not be in deny list
 #        - user must be allow list .
+#
+# Initial Value - UNEXAMINED
 # RetCode - LOCKED
 #         - NO_ACCESS
 
-#$verbose = 1;
 
 my $commit = shift ;
 my $deny_array = $commit->{'metadata'}->{'deny'} ; 
 my $allow_array = $commit->{'metadata'}->{'allow'} ; 
 
 my $user = $commit->{'user'} ;
-   logger "user -> $user " ;
 
    foreach $item (@{$deny_array}) {
     $item =~ s!(\s+)(.+)(\s+)!$2!;
+   
+
     if ($item =~/\*/) {
          $commit->{'metadata'}->{'txn'} = 'DENY' ;
          return ;
@@ -130,15 +142,14 @@ my $user = $commit->{'user'} ;
    $commit->{'metadata'}->{'txn'} = 'NO_ACCESS' ;
    foreach $item (@{$allow_array}) {
    $item =~ s!(\s+)(.+)(\s+)!$2!;
-   
-   logger "item -> $item " ;
-   logger "user -> $user " ;
 
     if($item =~ /\b$user\b/) {
          $commit->{'metadata'}->{'txn'} = 'OK' ;
          return ;
     }
    }
+   print "Exiting _txnValidate\n" ;
+   print Dumper($commit) ;
 }
 
 
@@ -146,8 +157,7 @@ my $user = $commit->{'user'} ;
 sub _vaLidate(%) {
 my $commit = shift;
 
-logger Dumper($commit) ;
-# Validate give commit collection
+# Validate given commit collection
 
 # - Check if /per commit all controls met.
 
@@ -169,7 +179,6 @@ logger Dumper($commit) ;
                                 }
          
       }
-      logger  Dumper($validation) ;
       $commit->{'allcommits'}->{$commit_under_exam}->{'validation'} = $validation ;
    } 
 
@@ -223,6 +232,24 @@ if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
     $message .=  "\n\n ** END of Analysis ** \n" ; 
     print $message , "\n" if ($EXITCODE > 0) ;
     exit $EXITCODE ;
+}
+
+sub examineTagPush(%) {
+#Given Analyzed commit hash it will determine GO / NO Go and send an email.
+
+# Tag can be pushed bu Tag createor only.
+my $input = shift ;
+my $commit = $input->{'commits'} ;
+
+}
+
+
+sub _isOnShortList ($) {
+#-- This just a stub.
+   
+
+  return undef ;
+
 }
 
 1;

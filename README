@@ -1,0 +1,11 @@
+This is git pre-receive prototype to control ones ability to push branches and tags based on criteria like 
+
+* Bug Number
+* Reviewer 
+
+* If specific tag is permitted to be pushed by some user. 
+
+This really a pre alpha code;  but a decent prototype for branch conrrol.
+
+forvaidya@gmail.com
+--

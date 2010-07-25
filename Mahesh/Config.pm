@@ -40,6 +40,7 @@ $branches->{'master'} = {
 'allow' => ['mvaidya', 
             'someuser', 
             'joker'],
+'controls' => undef ,
 } ; 
 
 

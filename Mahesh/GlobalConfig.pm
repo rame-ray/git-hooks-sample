@@ -21,7 +21,7 @@ BEGIN {
 #          0 AutoPR
 #          1 Description
 #          2 Reviewer
-#          3 Shortlist
+#          3 ShortList
 #           +---+---+---+---+
 #           | 3 | 2 | 1 | 0 |
 #           +---+---+---+---+
@@ -38,7 +38,7 @@ my $requirement = {};
     $requirement->{0}='AutoPR' ;
     $requirement->{1}='Description' ;
     $requirement->{2}='Reviewer' ;
-    $requirement->{3}='Shortlist' ;
+    $requirement->{3}='ShortList' ;
 
 $global_config->{'requirement'} = $requirement ;
 
