@@ -6,9 +6,7 @@ use Mahesh::GlobalConfig ;
 use Data::Dumper;
 
 
-logger "\n" x 3 ;
-logger "Excution of $0 begin" ;
-
+#-------------------------
 
 my $from = undef;
 my $to = undef;
@@ -38,10 +36,12 @@ $commiting_user  =~ s!(.+)(\@.*)!$1!g;
 
 my $input_hash = {from => $from, to => $to, branch => $branch, tag => $tag , user => $commiting_user} ;
 
-my $commits = getCommits($input_hash) ;
 
+my $commits = getCommits($input_hash) ;
+ 
+exit 22 ;
 examineCommits({commits => $commits}) ;
  
-# - Add code here to control once ability to push tags.
+exit 22 ;
 
 }

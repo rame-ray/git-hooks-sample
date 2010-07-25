@@ -56,10 +56,11 @@ sub getCommits(%)  {
     our $commit_array = () ;
     our $return_hash = {} ;
 
-    my $command = "git rev-list --pretty " .  $input->{'to'}  . '   ^' . $input->{'from'} . ' |' ;
-    $command = "git log  -1 $input->{'from'} |"  if ($input->{'to'} =~ /0{40}/) ;
-  
+    return undef unless defined( $input->{'branch'} ) ;
 
+    my $command = 'git rev-list --pretty ' .  $input->{'to'}  . '   ^' . $input->{'from'} . ' |' ;
+    $command = 'git rev-list --pretty ' .  $input->{'to'}  . ' |'  if ($input->{'from'} =~ /0{40}/) ;
+  
   
     $return_hash->{'branch'} = $input->{'branch'} ;
     $return_hash->{'from'} = $input->{'from'} ;
@@ -69,8 +70,6 @@ sub getCommits(%)  {
     $return_hash->{'metadata'} = 
              $config->{'branch'}->{$return_hash->{'branch'}};
 
-    print "Metadata for this branch\n" ;
-    print Dumper($config) , "\n" ;
 
     open (GITPTR, $command) ;
     while(<GITPTR>){
@@ -193,6 +192,8 @@ my $input = shift ;
 my $commit = $input->{'commits'} ;
 my $EXITCODE = 0 ;
 my $message = undef ;
+
+return undef unless defined( $commit->{'branch'} ) ;
 
 if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
    $message .=  "\nBranch $commit->{'branch'} is Locked for Push\n"  ;

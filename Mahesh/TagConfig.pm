@@ -18,22 +18,6 @@ my $tags = {} ;
 $tag_config->{'tag'} = $tags;
 
 
-#
-###########################################################
-#
-# Controls - Bit Mask (Bit Position)
-#          0 AutoPR
-#          1 Shortlist
-#          2 Reviewer
-#          3 Special Flag 
-#           +---+---+---+---+
-#           | 3 | 2 | 1 | 0 |
-#           +---+---+---+---+
-#
-# Example - All On = 15; 
-#
-###########################################################
-#
 
 $tags->{'NTAG'} = {
 'email' => 'tag_master@example.com',
@@ -44,7 +28,6 @@ $tags->{'NTAG'} = {
             'joker'],
 
 'deny' => ['badman'], 
-
 } ; 
 
 
