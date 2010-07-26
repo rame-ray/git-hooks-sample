@@ -39,7 +39,11 @@ my $input_hash = {from => $from, to => $to, branch => $branch, tag => $tag , use
 
 my $commits = getCommits($input_hash) ;
  
-exit examineCommits({commits => $commits}) || validateForTags($commit) ; 
- 
+my $commit_result = examineCommits({commits => $commits}) ;
+$commit_result = !defined($commit_result) ? -256 : $commit_result ;
 
+my $tag_result = validateForTags($input_hash) ;
+$tag_result = !defined($tag_result) ? -256 : $tag_result ;
+
+exit  ($tag_result | $commit_result ); 
 }

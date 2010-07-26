@@ -120,6 +120,8 @@ sub _tXnvaLidate(%){
 
 
 my $commit = shift ;
+return 0 unless (defined($commit->{'branch'}))  ;
+
 my $deny_array = $commit->{'metadata'}->{'deny'} ; 
 my $allow_array = $commit->{'metadata'}->{'allow'} ; 
 
@@ -262,6 +264,8 @@ sub validateForTags(%) {
 my $looks_good = 0 ;
 my $commit = shift ;
 
+return $looks_good unless (defined($commit->{'tag'}))  ;
+
 $commit->{'config'} = $tag_config->{'tag'}->{$commit->{'tag'}} ;
 
 unless (defined ($commit->{'config'} )) {
@@ -270,6 +274,7 @@ unless (defined ($commit->{'config'} )) {
 }
 
 #- Examine if this user owns in allow mask of tag.
+
 
 foreach my $deny_item (@{$commit->{'config'}->{'deny'}}) {
    if ($deny_item =~/(\b$commit->{'user'}\b)|(.*\*.*)/) {
@@ -285,7 +290,14 @@ foreach my $allow_item (@{$commit->{'config'}->{'allow'}}) {
    }
 }
 
-print "user $commit->{'user'} has no access on $commit->{'tag'}\n" if ($looks_good = -1) ;
+
+if ($commit->{'config'}->{'owner'} =~ /\b$commit->{'user'}\b/) {
+     $looks_good = 0 ;
+}
+
+print "user $commit->{'user'} has no access on $commit->{'tag'}\n"  
+                                             if ($looks_good == -1) ;
+
 return $looks_good ; ;
 
 }

@@ -34,13 +34,14 @@ $config->{'branch'} = $branches;
 ###########################################################
 #
 
-$branches->{'crapi'} = {
+$branches->{'master'} = {
 'email' => 'branch_master@example.com',
 'owner' => 'owner_master@example.com',
 'allow' => ['mvaidya', 
             'someuser', 
             'joker'],
-'controls' => undef ,
+
+'controls' => 1 ,
 } ; 
 
 

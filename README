@@ -1,11 +1,23 @@
-This is git pre-receive prototype to control ones ability to push branches and tags based on criteria like 
+GiT pre-receive sample.
 
-* Bug Number
-* Reviewer 
+Per Branch ACL
+^^^^^^^^^^^^^^^
+Many project have mandatory requirement to add bug number, Headline and Description in commit.
 
-* If specific tag is permitted to be pushed by some user. 
+This hook implements ACL verification (allow, deny and requirement of bug number) before applying Push to authoritative repository.
 
-This really a pre alpha code;  but a decent prototype for branch conrrol.
 
-forvaidya@gmail.com
+Pushing the TAG
+^^^^^^^^^^^^^^^
+Anyone can push any tag in GiT if you are under Gitosis as gitosis is a proxy user who does the GiT operation.
+
+There is TagConfig.pm which list valid tag and owner. only owner and anyone in allow list can move create / the tag
+
+It is also necessary to set in git config.
+^^^
+receive.denyDeletes=true 
+receive.denyNonFastForwards=true
+
 --
+forvaidya@gmail.com
+(Bangalore India)

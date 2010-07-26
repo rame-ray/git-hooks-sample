@@ -20,18 +20,13 @@ $tag_config->{'tag'} = $tags;
 
 
 $tags->{'NTAG'} = {
-'email' => 'tag_master@example.com',
-'owner' => 'owner_master@example.com',
-
-'allow' => ['mvaidyai', 
-            'someuser', 
-            'joker'],
-
-'deny' => ['badman',
-	   'mvaidyaa'], 
+owner=>mvaidya ,
 } ; 
 
 
+$tags->{'DUM1'} = {
+owner=>mvaidya ,
+} ; 
 
 
 1;
