@@ -39,9 +39,7 @@ my $input_hash = {from => $from, to => $to, branch => $branch, tag => $tag , use
 
 my $commits = getCommits($input_hash) ;
  
-exit 22 ;
-examineCommits({commits => $commits}) ;
+exit examineCommits({commits => $commits}) || validateForTags($commit) ; 
  
-exit 22 ;
 
 }
