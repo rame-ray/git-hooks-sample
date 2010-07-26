@@ -264,7 +264,7 @@ my $commit = shift ;
 
 $commit->{'config'} = $tag_config->{'tag'}->{$commit->{'tag'}} ;
 
-unless defined ($commit->{'config'} ) {
+unless (defined ($commit->{'config'} )) {
      print "$config->{'tag'} is NOT a valid tag for PUSH\n";
      $looks_good = -1 ;
 }
