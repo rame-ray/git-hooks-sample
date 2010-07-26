@@ -16,6 +16,7 @@ BEGIN {
    @EXPORT  = qw(getCommits   
                  logger 
                  examineCommits
+                 validateForTags
                  $verbose) ;
    our  $verbose = 1;
 
@@ -232,7 +233,7 @@ if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
 
     $message .=  "\n\n ** END of Analysis ** \n" ; 
     print $message , "\n" if ($EXITCODE > 0) ;
-    exit $EXITCODE ;
+    return $EXITCODE ;
 }
 
 sub examineTagPush(%) {
@@ -252,6 +253,43 @@ sub _isOnShortList ($) {
   return undef ;
 
 }
+
+
+# - 
+
+sub validateForTags(%) {
+
+my $looks_good = 0 ;
+my $commit = shift ;
+
+$commit->{'config'} = $tag_config->{'tag'}->{$commit->{'tag'}} ;
+
+unless defined ($commit->{'config'} ) {
+     print "$config->{'tag'} is NOT a valid tag for PUSH\n";
+     $looks_good = -1 ;
+}
+
+#- Examine if this user owns in allow mask of tag.
+
+foreach my $deny_item (@{$commit->{'config'}->{'deny'}}) {
+   if ($deny_item =~/(\b$commit->{'user'}\b)|(.*\*.*)/) {
+        $looks_good = -1 ;
+        print  "user $commit->{'user'} has no access on $commit->{'tag'}\n" ;
+
+   }
+}
+
+foreach my $allow_item (@{$commit->{'config'}->{'allow'}}) {
+   if ($allow_item !~/(\b$commit->{'user'}\b)|(.*\*.*)/) {
+        $looks_good = -1 ;
+   }
+}
+
+print "user $commit->{'user'} has no access on $commit->{'tag'}\n" if ($looks_good = -1) ;
+return $looks_good ; ;
+
+}
+
 
 1;
 

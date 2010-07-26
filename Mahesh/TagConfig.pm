@@ -23,11 +23,12 @@ $tags->{'NTAG'} = {
 'email' => 'tag_master@example.com',
 'owner' => 'owner_master@example.com',
 
-'allow' => ['mvaidya', 
+'allow' => ['mvaidyai', 
             'someuser', 
             'joker'],
 
-'deny' => ['badman'], 
+'deny' => ['badman',
+	   'mvaidyaa'], 
 } ; 
 
 
