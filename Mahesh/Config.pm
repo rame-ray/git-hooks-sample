@@ -22,9 +22,9 @@ $config->{'branch'} = $branches;
 #
 # Controls - Bit Mask (Bit Position)
 #          0 AutoPR
-#          1 Shortlist
+#          1 Description
 #          2 Reviewer
-#          3 Special Flag 
+#          3 Shortlist
 #           +---+---+---+---+
 #           | 3 | 2 | 1 | 0 |
 #           +---+---+---+---+
@@ -41,7 +41,7 @@ $branches->{'master'} = {
             'someuser', 
             'joker'],
 
-'controls' => 1 ,
+'controls' => 3 ,
 } ; 
 
 

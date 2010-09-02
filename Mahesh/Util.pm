@@ -199,10 +199,10 @@ my $message = undef ;
 return undef unless defined( $commit->{'branch'} ) ;
 
 if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
-   $message .=  "\nBranch $commit->{'branch'} is Locked for Push\n"  ;
+   $message .=  "\n\nBranch $commit->{'branch'} is LOCKED for PUSH\n\n"  ;
    $EXITCODE = 1;
 } elsif ($commit->{'metadata'}->{'txn'} =~/NO_ACCESS/) {
-   $message .=  "\nUser $commit->{'user'} has no Push permission on branch Branch $commit->{'branch'}\n"  ;
+   $message .=  "\nUser $commit->{'user'} has NO PUSH PERMISSION on branch Branch $commit->{'branch'}\n"  ;
    $EXITCODE=2;
 }
 
