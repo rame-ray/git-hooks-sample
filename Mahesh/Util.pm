@@ -75,11 +75,34 @@ sub getCommits(%)  {
     open (GITPTR, $command) ;
     while(<GITPTR>){
        chomp;
+       s!<|>!!g;
+       print "::", $_, "\n" ;
        s/(^\s+)(.+)(\s+)$/$2/g;
        if (/(commit)(\s)(.{40})$/) {
          $commit_hash = {} ;
          $return_hash->{'allcommits'}->{$3} = $commit_hash ;
        }
+       elsif (/(Author:)(.+)(\@)(.*)/) {
+         my $capture=$2 ;
+         while (defined($capture)) {
+            if ($capture=~/(\S+)(\s)(.*)/) {
+            $capture=$3;
+            }else {
+              $result = $capture ;
+              $capture=undef ;
+            }
+        }
+        print "Commiter ::${result}::\n" ;
+        print "Key owner ::$input->{'user'}::\n" ;
+        if ($input->{'user'} !~ /\b$result\b/) {
+           my $mesg =  "\n\n" . "One or more commits in this series are done by user $result\n" ;
+              $mesg .= "Where as key is owned by $input->{'user'}:\n" ;
+              $mesg .= "possibly $result has stolen private key " .  $input->{'user'} , "\n" ;
+              die $mesg ;
+        }
+
+       }
+
        elsif (/(AutoPR)(\s+)?(:)(\s+)?(\d+)/) {
          next if $5 =~ /^$/;
          $commit_hash->{'AutoPR'} = $5;
@@ -199,10 +222,10 @@ my $message = undef ;
 return undef unless defined( $commit->{'branch'} ) ;
 
 if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
-   $message .=  "\n\nBranch $commit->{'branch'} is LOCKED for PUSH\n\n"  ;
+   $message .=  "\nBranch $commit->{'branch'} is Locked for Push\n"  ;
    $EXITCODE = 1;
 } elsif ($commit->{'metadata'}->{'txn'} =~/NO_ACCESS/) {
-   $message .=  "\nUser $commit->{'user'} has NO PUSH PERMISSION on branch Branch $commit->{'branch'}\n"  ;
+   $message .=  "\nUser $commit->{'user'} has no Push permission on branch Branch $commit->{'branch'}\n"  ;
    $EXITCODE=2;
 }
 
