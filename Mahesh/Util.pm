@@ -57,12 +57,30 @@ sub getCommits(%)  {
     our $commit_array = () ;
     our $return_hash = {} ;
 
+    my $branch_point = $config->{'branch'}->{$input->{'branch'}}->{'branch_point'} ;
+
     return undef unless defined( $input->{'branch'} ) ;
 
-    my $command = 'git rev-list --pretty ' .  $input->{'to'}  . '   ^' . $input->{'from'} . ' |' ;
-    $command = 'git rev-list --pretty ' .  $input->{'to'}  . ' |'  if ($input->{'from'} =~ /0{40}/) ;
+    $input->{'from'} = $branch_point
+                       if ($input->{'from'} =~ /0{40}/) ;
+    
+    my $command = 'git rev-list --pretty ' .  
+                   $input->{'to'}  . 
+                   '   ^' . $input->{'from'} . 
+                   ' |' ;
+
+
+    
+    
+    #####################################################
+    #  Old Design ..
+    #$command = 'git rev-list --pretty ' .  
+    #            $input->{'to'}  . ' |'  
+    #            if ($input->{'from'} =~ /0{40}/) ;
+    #
+    #####################################################
   
-  
+
     $return_hash->{'branch'} = $input->{'branch'} ;
     $return_hash->{'from'} = $input->{'from'} ;
     $return_hash->{'to'} = $input->{'to'} ;
