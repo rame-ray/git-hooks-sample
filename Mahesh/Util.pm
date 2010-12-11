@@ -18,7 +18,7 @@ BEGIN {
                  examineCommits
                  validateForTags
                  $verbose) ;
-   our  $verbose = 1;
+   our  $verbose = 0;
 
 }
 
@@ -94,7 +94,7 @@ sub getCommits(%)  {
     while(<GITPTR>){
        chomp;
        s!<|>!!g;
-       print "::", $_, "\n" ;
+       logger "::", $_, "\n" ;
        s/(^\s+)(.+)(\s+)$/$2/g;
        if (/(commit)(\s)(.{40})$/) {
          $commit_hash = {} ;
@@ -110,8 +110,8 @@ sub getCommits(%)  {
               $capture=undef ;
             }
         }
-        print "Commiter ::${result}::\n" ;
-        print "Key owner ::$input->{'user'}::\n" ;
+        logger "Commiter ::${result}::\n" ;
+        logger "Key owner ::$input->{'user'}::\n" ;
         if ($input->{'user'} !~ /\b$result\b/) {
            my $mesg =  "\n\n" . "One or more commits in this series are done by user $result\n" ;
               $mesg .= "Where as key is owned by $input->{'user'}:\n" ;
@@ -168,31 +168,35 @@ my $allow_array = $commit->{'metadata'}->{'allow'} ;
 
 my $user = $commit->{'user'} ;
 
-   foreach $item (@{$deny_array}) {
-    $item =~ s!(\s+)(.+)(\s+)!$2!;
-   
+$commit->{'metadata'}->{'txn'} = 'NO_ACCESS' ;
+###################### ALLOW ###############################
 
-    if ($item =~/\*/) {
-         $commit->{'metadata'}->{'txn'} = 'DENY' ;
-         return ;
-    } elsif($item =~ /\b$user\b/) {
-         $commit->{'metadata'}->{'txn'} = 'NO_ACCESS' ;
-         return ;
-    }
-
-   }
-
-   $commit->{'metadata'}->{'txn'} = 'NO_ACCESS' ;
    foreach $item (@{$allow_array}) {
    $item =~ s!(\s+)(.+)(\s+)!$2!;
-
+   logger "$item :: $user \n" ;
+    if ($item =~/\*/) {
+         $commit->{'metadata'}->{'txn'} = 'OK' ;
+    }
     if($item =~ /\b$user\b/) {
          $commit->{'metadata'}->{'txn'} = 'OK' ;
-         return ;
     }
    }
-   print "Exiting _txnValidate\n" ;
-   print Dumper($commit) ;
+
+   logger Dumper($commit) ;
+
+###################### DENY ###############################
+   foreach $item (@{$deny_array}) {
+    $item =~ s!(\s+)(.+)(\s+)!$2!;
+    if ($item =~/\*/) {
+         $commit->{'metadata'}->{'txn'} = 'DENY' ;
+    } elsif($item =~ /\b$user\b/) {
+         $commit->{'metadata'}->{'txn'} = 'NO_ACCESS' ;
+    }
+
+   }
+
+   logger "Exiting _txnValidate\n" ;
+   logger Dumper($commit) ;
 }
 
 
@@ -241,10 +245,14 @@ return undef unless defined( $commit->{'branch'} ) ;
 
 if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
    $message .=  "\nBranch $commit->{'branch'} is Locked for Push\n"  ;
+   print $message , "\n" ;
    $EXITCODE = 1;
+   exit ($EXITCODE) ;
 } elsif ($commit->{'metadata'}->{'txn'} =~/NO_ACCESS/) {
    $message .=  "\nUser $commit->{'user'} has no Push permission on branch Branch $commit->{'branch'}\n"  ;
    $EXITCODE=2;
+   print $message , "\n" ;
+   exit ($EXITCODE) ;
 }
 
 # - See which conditions are not met.
@@ -274,7 +282,7 @@ if ($commit->{'metadata'}->{'txn'} =~/DENY/) {
     }
   }
 
-    $message .=  "\n\n ** END of Analysis ** \n" ; 
+    $message .=  "\n\n ** END of Analysis ** \nIf you need to change comment in this commit please refer to procedure at http://placeholder.example.com/git/commit_change.html \ngit rebase -i COMMIT^" ; 
     print $message , "\n" if ($EXITCODE > 0) ;
     return $EXITCODE ;
 }
