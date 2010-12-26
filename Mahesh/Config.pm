@@ -22,9 +22,9 @@ $config->{'branch'} = $branches;
 #
 # Controls - Bit Mask (Bit Position)
 #          0 AutoPR
-#          2 Shortlist
-#          3 Reviewer
-#          3 Special Flag 
+#          1 Description
+#          2 Reviewer
+#          3 Shortlist
 #           +---+---+---+---+
 #           | 3 | 2 | 1 | 0 |
 #           +---+---+---+---+
