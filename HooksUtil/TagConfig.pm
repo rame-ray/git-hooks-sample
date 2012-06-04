@@ -1,5 +1,5 @@
 
-package Mahesh::TagConfig ;
+package HooksUtil::TagConfig ;
 
 BEGIN {
    use Exporter   ();

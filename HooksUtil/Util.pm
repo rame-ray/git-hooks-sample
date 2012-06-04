@@ -1,8 +1,8 @@
-package Mahesh::Util;  
+package HooksUtil::Util;  
 
-use Mahesh::Config ;
-use Mahesh::TagConfig ;
-use Mahesh::GlobalConfig ;
+use HooksUtil::Config ;
+use HooksUtil::TagConfig ;
+use HooksUtil::GlobalConfig ;
 use Data::Dumper ;
 
 BEGIN {

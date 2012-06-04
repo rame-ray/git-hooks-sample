@@ -1,4 +1,4 @@
-package Mahesh::GlobalConfig ;
+package HooksUtil::GlobalConfig ;
 
 BEGIN {
    use Exporter   ();

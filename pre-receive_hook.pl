@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
-use Mahesh::Util ;
-use Mahesh::Config ;
-use Mahesh::GlobalConfig ;
+use HooksUtil::Util ;
+use HooksUtil::Config ;
+use HooksUtil::GlobalConfig ;
 use Data::Dumper;
 
 
