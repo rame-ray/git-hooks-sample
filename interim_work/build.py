@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import argparse, ConfigParser, os, sys
 import logging 
-logging.basicConfig(level=1)
 scriptname = os.path.realpath(sys.argv[0]) 
 configdir = os.path.dirname(scriptname)
 
@@ -10,6 +9,11 @@ print configdir
 
 build_config = ConfigParser.RawConfigParser()
 build_config.read(configdir+'/build.cfg')
+
+FORMAT = '%(asctime)-15s  %(user)-8s %(message)s'
+logging.basicConfig(level=build_config.get('logging', 'loglevel'), format=FORMAT) 
+logdata = {'user': os.environ['LOGNAME'] }
+
 
 
 parser = argparse.ArgumentParser(description = "MYMY build / deploy script")
@@ -26,10 +30,10 @@ if args.publish != None :
 
 #- Build Ant tasks
 for ant_repo in build_config.get('build', 'build.repos').split(','):
-	logging.info ("Building  "+ ant_repo)
+	logging.info ("Building  "+ ant_repo, extra=logdata)
 
 for tag_repo in build_config.get('build', 'tag.repos').split(','):
-	logging.info ("Applying TAG on ::  "+ tag_repo)
+	logging.info ("Applying TAG on ::  "+ tag_repo, extra=logdata)
 
 #- Do Staging if needed.
 
