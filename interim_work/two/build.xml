@@ -1,0 +1,18 @@
+<project name="Two.." default="all" basedir=".">
+    <description>
+      Just cat this file 
+    </description>
+    <target name="all" description="just_cat">
+     <exec executable="git">
+       <arg value="tag"/>
+       <arg value="-m"/>
+       <arg value="TWO-${TAG}"/>
+       <arg value="${TAG}"/>
+     </exec>
+     <exec executable="date">
+     </exec>
+     <exec executable="id">
+     </exec>
+    </target>
+</project>
+
