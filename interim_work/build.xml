@@ -1,0 +1,16 @@
+<project name="Top.." default="top" basedir=".">
+
+    <description>
+      Top level ant script
+    </description>
+
+    <target name="top" description="Top Level">
+      <echo>${TAG}</echo>
+      <ant antfile="build.xml" dir="one">
+      </ant>
+      <ant antfile="build.xml" dir="two">
+      </ant>
+    </target>
+
+</project>
+
