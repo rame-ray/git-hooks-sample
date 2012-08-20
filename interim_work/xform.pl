@@ -1,9 +1,16 @@
 #!/usr/bin/perl
 use File::Basename ;
 use File::Find ;
+use Data::Dumper ;
 
-#Global Arrays
+my $html_comment = '<!-- auto_generated_mvaidya_ ' ;
+my $exec_time =  scalar localtime(time) ;
+$html_comment .= $exec_time .   ' -->' ;
+
+
 @jsp_filelist = () ;
+
+my $concat_map = {} ;
 
 
 find(\&wanted, '.') ;
@@ -16,71 +23,81 @@ sub wanted{
 
 
 foreach my $curr_jsp  (@jsp_filelist) {
-    my $prefix = basename($curr_jsp) ;
-    $prefix =~ s/\.jsp//g ;
-    $prefix .= _combined ;
-    $this_js_name = 'js/' . $prefix . '.js' ;
-    $this_css_name = 'css/' . $prefix . '.css' ;
-   
-    my $css_done = undef ;
-    my $js_done = undef ;
-    my @lines = () ;
-
-#-- Examine each jsp for given pattern.
     open(CURRFILE, "< $curr_jsp")  || die "Open failed on $curr_jsp :: $!\n" ;
+    my @lines_array = () ;
 
-    open (JS_WRITE, ">>${this_js_name}") || die "open for append failed on WRITE ${this_js_name} :$!\n" ;
-    open (CSS_WRITE, ">>${this_css_name}") || die "open for append failed on WRITE ${this_css_name} :$!\n" ;
-
+  
     while (<CURRFILE>) {
+       chomp ;
        my $curr_line = $_ ;
-       chomp ($curr_line);
+       if ($curr_line =~/servename/) {
+              $curr_line =~ s/<|>|\"|//g ;
+              $curr_line =~ s/^\s+|\s+$|\n//g;
+	      $curr_line =~ s/\s+/:/g;
+              my @tokens = split(/:/, $curr_line) ;
 
-       if ($curr_line =~ /(href=\")(css\/.*\.css)(\")/) {
-          if (!defined($css_done)) {
-              $css_done = '<link rel="stylesheet" type="text/css" href="' . ${this_css_name} . '" media="all" />' ;
-              push @lines, $css_done ;
-	      print STDERR "got css in ${curr_jsp} $2\n" ;
-          }  
+              my $hash_key = undef ;
+              my $hash_val = undef ;
 
-          open( THIS_CSS_READ, "< $2") || warn "Open failed for COMBINATION on $2 :: $!\n" ;
-          while (<THIS_CSS_READ>) {
-                   print CSS_WRITE  $_ ;
-          }
+              foreach my $item (@tokens) {
+                if ($item =~ /(servename=)(.*)/) {
+		   $hash_key = $2;
+                }elsif ($item =~ /(href=)(.*)/) {
+		   $hash_val = $2;
+		   next if ($2=~//g) ;
+                }
+              }
 
-       } elsif ($curr_line =~ /(src=\")(js\/.*\.js)(\")/) {
-          if (!defined($js_done)) {
-              $js_done = '<script type="text/javascript" charset="utf-8" src="' .  ${this_js_name} . '"></script>' ;
-              push @lines, $js_done ;
-	      print STDERR "got js in ${curr_jsp} $2\n" ;
-          }  
+              if ( ! defined ($concat_map->{$hash_key}->{'ever_seen'}) ) {
 
-          open( THIS_JS_READ, "< $2") || warn "Open failed for COMBINATION on $2 :: $!\n" ;
-          while (<THIS_JS_READ>) {
-                   print JS_WRITE  $_ ;
-          }
-
+                 $concat_map->{$hash_key}->{'ever_seen'} = 1;
+                 $concat_map->{$hash_kay}->{'list'} = () ;
+                 $concat_map->{$hash_kay}->{'affected_jsp_list'} = () ;
+                 push @lines_array , $html_comment ;
+                 my $converted_css_line = "\n". '<link rel="stylesheet" origin="converted" type="text/css" href="css/' . $hash_key . '.css" media="all" />' . "\n" ;
+                 push @lines_array , $converted_css_line ;
+		
+              }
+              push @{$concat_map->{$hash_key}->{'list'}} , $hash_val ;
+              push @{$concat_map->{$hash_key}->{'affected_jsp_list'}} , $curr_jsp
        } else {
-              push @lines, $curr_line ;
-       }
-    }
+              push @lines_array , $curr_line ;
 
-    close(CSS_WRITE) ;
-    close(JS_WRITE) ;
+       }
+
+    } ## End per line scan 
     close($CURRFILE) ;
 
-    rename ($curr_jsp, "${curr_jsp}.org") || die " mv $curr_jsp to ${curr_jsp}.org Failed : $!\n" ;
-    open(WRITEPTR, ">$curr_jsp") || die "open failed on ${curr_jsp} :$!\n" ;
+    open (WRITER, ">${curr_jsp}.converted") || die "Open +w failed on ${curr_jsp}.converted:$!\n" ;
 
-    foreach my $write_line (@lines) {
-        print WRITEPTR $write_line , "\n" ;
+    foreach my $outline (@lines_array) {
+     print WRITER $outline , "\n" ;
     }
-    close(WRITEPTR) ;
+    close(WRITER) ;
+
+} #-- Per file scan.
+
+
+##- Convert Array to set (unique) 
+
+foreach $key (keys % $concat_map) {
+   unlink "css/${key}.css" ;
+
+   foreach my $item (@{$concat_map->{$key}->{'list'}}) {
+       $concat_map->{$key}->{'set'}->{$item} = 1 ;
+   }
+   foreach my $item (@{$concat_map->{$key}->{'affected_jsp_list'}}) {
+       $concat_map->{$key}->{'affected_jsp_set'}->{$item} = 1 ;
+   }
+  
+   
+  foreach my $setitem (keys  %{$concat_map->{$key}->{'set'}}) {
+    my $command = "cat ${setitem} >> css/${key}.css" ;
+    print $command , "\n" ;
+    qx($command) ; 
+  }
+
 }
 
 
-#-- Progress 
-# 1) Combine jss in war/jss folder.
-# 2) Combine css in war/css folder.
-# 3) Minify - Not implemented
-# 4) PWD must be war file.
+# print Dumper($concat_map) ;
