@@ -92,6 +92,9 @@ foreach $key (keys % $concat_map) {
   
    
   foreach my $setitem (keys  %{$concat_map->{$key}->{'set'}}) {
+    my $command = "echo  \"/* Included :: ${setitem} */\" >> css/${key}.css" ;
+    print $command , "\n" ;
+    qx($command) ; 
     my $command = "cat ${setitem} >> css/${key}.css" ;
     print $command , "\n" ;
     qx($command) ; 
