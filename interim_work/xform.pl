@@ -51,8 +51,8 @@ foreach my $curr_jsp  (@jsp_filelist) {
               if ( ! defined ($concat_map->{$hash_key}->{'ever_seen'}) ) {
 
                  $concat_map->{$hash_key}->{'ever_seen'} = 1;
-                 $concat_map->{$hash_kay}->{'list'} = () ;
-                 $concat_map->{$hash_kay}->{'affected_jsp_list'} = () ;
+                 $concat_map->{$hash_key}->{'list'} = () ;
+                 $concat_map->{$hash_key}->{'affected_jsp_list'} = () ;
                  push @lines_array , $html_comment ;
                  my $converted_css_line = "\n". '<link rel="stylesheet" origin="converted" type="text/css" href="css/' . $hash_key . '.css" media="all" />' . "\n" ;
                  push @lines_array , $converted_css_line ;
