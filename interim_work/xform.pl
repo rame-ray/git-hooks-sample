@@ -26,7 +26,6 @@ foreach my $curr_jsp  (@jsp_filelist) {
     open(CURRFILE, "< $curr_jsp")  || die "Open failed on $curr_jsp :: $!\n" ;
     my @lines_array = () ;
 
-  
     while (<CURRFILE>) {
        chomp ;
        my $curr_line = $_ ;
@@ -52,12 +51,14 @@ foreach my $curr_jsp  (@jsp_filelist) {
               $concat_map->{$hash_key}->{'jsp_name'}->{$curr_jsp} = 1;
               $concat_map->{$hash_key}->{'inclusion'}->{$hash_val} = 1;
               
-              my $combo = ${hash_key} . '-' . ${curr_jsp} ;
-              unless (exists(concat_map->{$hash_key}->{$combo})) {
+              my $combo =  ${hash_key} . ':' . ${curr_jsp} ;
+              $combo =~ s/\/|\./:/g; 
+
+              unless (exists($concat_map->{$hash_key}->{$combo})) {
                   push @lines_array , $html_comment ;
                   my $converted_css_line = "\n". '<link rel="stylesheet" origin="converted" type="text/css" href="css/' . $hash_key . '.css" media="all" />' . "\n" ;
                   push @lines_array , $converted_css_line ;
-		  concat_map->{$hash_key}->{$combo} = 1 ;
+		  $concat_map->{$hash_key}->{$combo} = 1 ;
               }
 
 		
@@ -66,10 +67,9 @@ foreach my $curr_jsp  (@jsp_filelist) {
        }
 
     } ## End per line scan 
-    close($CURRFILE) ;
+    close(CURRFILE) ;
 
-    unlink("${curr_jsp}.converted") ;
-    open (WRITER, ">${curr_jsp}.converted") || "Open +w failed on ${curr_jsp}.converted:$!\n" ;
+    open (WRITER, ">${curr_jsp}.converted") || die "Open +w failed on ${curr_jsp}.converted:$!\n" ;
 
     foreach my $outline (@lines_array) {
      print WRITER $outline , "\n" ;
@@ -79,7 +79,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
 } #-- Per file scan.
 
 
-#print Dumper($concat_map) , "\n" ;
+print Dumper($concat_map) , "\n" ;
 
  foreach $dest_file (sort keys % $concat_map) {
     my $css_dest_full_path = 'css/' . $dest_file . '.css' ;
