@@ -69,7 +69,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
     close($CURRFILE) ;
 
     unlink("${curr_jsp}.converted") ;
-    open (WRITER, ">${curr_jsp}.converted") ;
+    open (WRITER, ">${curr_jsp}.converted") || "Open +w failed on ${curr_jsp}.converted:$!\n" ;
 
     foreach my $outline (@lines_array) {
      print WRITER $outline , "\n" ;
@@ -85,12 +85,11 @@ foreach my $curr_jsp  (@jsp_filelist) {
     my $css_dest_full_path = 'css/' . $dest_file . '.css' ;
 
     print "Doing :${css_dest_full_path}:\n" ;
-    unlink(${css_dest_full_path}) ;
-    open (CSSWRITE, "+> ${css_dest_file_path}") ;
+    open (CSSWRITE, ">$css_dest_full_path")  || die "+w failed on ${css_dest_full_path}:$!\n" ;
 
     foreach my $inclusion_item (keys  %{$concat_map->{$dest_file}->{'inclusion'}}) {
-      print CSSWRITE  "\n/*  CSS Include ${inclusion_item}  time ${exec_time} */" ;
-      print "Adding ${inclusion_item} to ${css_dest_full_path}" , "\n" ;
+      print CSSWRITE  "\n/*  CSS Included ${inclusion_item}  time ${exec_time} */\n" ;
+#      print "Adding ${inclusion_item} to ${css_dest_full_path}" , "\n" ;
 
       open (INCLUSION, "< ${inclusion_item} ") || die "Open +r failed on ${inclusion_item}:$!\n" ;
       while (<INCLUSION>) {
