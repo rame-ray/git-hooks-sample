@@ -39,6 +39,8 @@ foreach my $curr_jsp  (@jsp_filelist) {
               my $hash_key = undef ;
               my $hash_val = undef ;
 
+              print "$curr_jsp $hash_key $hash_val $concat_map->{$hash_key}->{'ever_seen'}\n" ;
+
               foreach my $item (@tokens) {
                 if ($item =~ /(servename=)(.*)/) {
 		   $hash_key = $2;
@@ -48,7 +50,9 @@ foreach my $curr_jsp  (@jsp_filelist) {
                 }
               }
 
-              if ( ! defined ($concat_map->{$hash_key}->{'ever_seen'}) ) {
+              print "$curr_jsp $hash_key $hash_val $concat_map->{$hash_key}->{'ever_seen'}\n" ;
+
+              unless ($concat_map->{$hash_key}->{'ever_seen'} == 1 ) {
 
                  $concat_map->{$hash_key}->{'ever_seen'} = 1;
                  $concat_map->{$hash_key}->{'list'} = () ;
@@ -61,9 +65,8 @@ foreach my $curr_jsp  (@jsp_filelist) {
               push @{$concat_map->{$hash_key}->{'list'}} , $hash_val ;
               push @{$concat_map->{$hash_key}->{'affected_jsp_list'}} , $curr_jsp
        } else {
-              push @lines_array , $curr_line ;
-
-       }
+                  push @lines_array , $curr_line ;
+              }
 
     } ## End per line scan 
     close($CURRFILE) ;
@@ -93,14 +96,14 @@ foreach $key (keys % $concat_map) {
    
   foreach my $setitem (keys  %{$concat_map->{$key}->{'set'}}) {
     my $command = "echo  \"/* Included :: ${setitem} */\" >> css/${key}.css" ;
-    print $command , "\n" ;
+#    print $command , "\n" ;
     qx($command) ; 
     my $command = "cat ${setitem} >> css/${key}.css" ;
-    print $command , "\n" ;
+#    print $command , "\n" ;
     qx($command) ; 
   }
 
 }
 
 
-# print Dumper($concat_map) ;
+#print Dumper($concat_map) ;
