@@ -56,7 +56,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
 
               unless (exists($concat_map->{$hash_key}->{$combo})) {
                   push @lines_array , $html_comment ;
-                  my $converted_css_line = "\n". '<link rel="stylesheet" origin="converted" type="text/css" href="css/' . $hash_key . '.css" media="all" />' . "\n" ;
+                  my $converted_css_line = "\n". '<link rel="stylesheet" origin="converted" type="text/css" href="css/' . $hash_key . '.css" media="all"/>' . "\n" ;
                   push @lines_array , $converted_css_line ;
 		  $concat_map->{$hash_key}->{$combo} = 1 ;
               }
