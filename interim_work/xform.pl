@@ -3,7 +3,7 @@ use File::Basename ;
 use File::Find ;
 use Data::Dumper ;
 
-my $html_comment = '<!-- auto_generated_mvaidya_ ' ;
+my $html_comment = '<!-- auto_generated__mvaidya_'; 
 my $exec_time =  scalar localtime(time) ;
 $html_comment .= $exec_time .   ' -->' ;
 
@@ -30,6 +30,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
     while (<CURRFILE>) {
        chomp ;
        my $curr_line = $_ ;
+       
        if ($curr_line =~/servename/ && $curr_line =~/\.css/ && $curr_line =~/type=\"text\/css\"/) {
               $curr_line =~ s/<|>|\"|//g ;
               $curr_line =~ s/^\s+|\s+$|\n//g;
@@ -117,6 +118,13 @@ foreach my $curr_jsp  (@jsp_filelist) {
 
 
 ###########################################################################################
+#  ------- For debug only -----
+#
+# print Dumper($concat_map_js) , "\n" ;
+# print Dumper($concat_map) , "\n" ;
+#
+###########################################################################################
+
 #-- Process css files.
 
  foreach $dest_file (sort keys % $concat_map) {
@@ -158,9 +166,10 @@ foreach my $curr_jsp  (@jsp_filelist) {
       close(INCLUSION) ;
     }
     close(JSWRITE) ;
+   
+    ####################################################
+    # Javascript minify code goes here ..
+    ####################################################
  
  }
 
-###########################################################################################
-#  For debug only ..
-#print Dumper($concat_map) , "\n" ;
