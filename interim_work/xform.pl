@@ -11,6 +11,7 @@ $html_comment .= $exec_time .   ' -->' ;
 @jsp_filelist = () ;
 
 my $concat_map = {} ;
+my $concat_map_js = {} ;
 
 
 find(\&wanted, '.') ;
@@ -29,7 +30,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
     while (<CURRFILE>) {
        chomp ;
        my $curr_line = $_ ;
-       if ($curr_line =~/servename/) {
+       if ($curr_line =~/servename/ && $curr_line =~/\.css/ && $curr_line =~/type=\"text\/css\"/) {
               $curr_line =~ s/<|>|\"|//g ;
               $curr_line =~ s/^\s+|\s+$|\n//g;
 	      $curr_line =~ s/\s+/:/g;
@@ -44,6 +45,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
 		   $hash_key = $2;
                 }elsif ($item =~ /(href=)(.*)/) {
 		   $hash_val = $2;
+		   $hash_val =~ s/^\///g;
 		   next if ($2=~//g) ;
                 }
               }
@@ -62,15 +64,50 @@ foreach my $curr_jsp  (@jsp_filelist) {
               }
 
 		
-       } else {
+       }elsif ($curr_line =~/servename/ && $curr_line =~/\.js/ && $curr_line =~/type=\"text\/javascript\"/){
+	   
+              $curr_line =~ s/<\/script>|<|>|\"|//g ;
+              $curr_line =~ s/^\s+|\s+$|\n//g;
+	      $curr_line =~ s/\s+/:/g;
+	      $curr_line =~ s/\/$//g; 
+              my @tokens = split(/:/, $curr_line) ;
+
+              my $hash_key = undef ;
+              my $hash_val = undef ;
+
+              foreach my $item (@tokens) {
+                if ($item =~ /(servename=)(.*)/) {
+		   $hash_key = $2;
+                }elsif ($item =~ /(src=)(.*)/) {
+		   $hash_val = $2;
+		   $hash_val =~ s/^\///g;
+		   next if ($2=~//g) ;
+                }
+              }
+
+              $concat_map_js->{$hash_key}->{'jsp_name'}->{$curr_jsp} = 1;
+              $concat_map_js->{$hash_key}->{'inclusion'}->{$hash_val} = 1;
+              
+              my $combo =  ${hash_key} . ':' . ${curr_jsp} ;
+              $combo =~ s/\/|\./:/g; 
+
+              unless (exists($concat_map_js->{$hash_key}->{$combo})) {
+                  push @lines_array , $html_comment ;
+				  
+                  my $converted_js_line = "\n". '<script charset="utf-8" origin="converted" type="text/javascript" href="js/' . $hash_key . '.js" />' . "\n" ;				  
+                  push @lines_array , $converted_js_line ;
+		  $concat_map_js->{$hash_key}->{$combo} = 1 ;
+              }	   
+	   
+	   }else {
                   push @lines_array , $curr_line ;
        }
 
     } ## End per line scan 
     close(CURRFILE) ;
 
-    open (WRITER, ">${curr_jsp}.converted") || die "Open +w failed on ${curr_jsp}.converted:$!\n" ;
-
+    open (WRITER, ">${curr_jsp}") || die "Open +w failed on ${curr_jsp}:$!\n" ;
+	
     foreach my $outline (@lines_array) {
      print WRITER $outline , "\n" ;
     }
@@ -79,7 +116,8 @@ foreach my $curr_jsp  (@jsp_filelist) {
 } #-- Per file scan.
 
 
-print Dumper($concat_map) , "\n" ;
+###########################################################################################
+#-- Process css files.
 
  foreach $dest_file (sort keys % $concat_map) {
     my $css_dest_full_path = 'css/' . $dest_file . '.css' ;
@@ -89,7 +127,6 @@ print Dumper($concat_map) , "\n" ;
 
     foreach my $inclusion_item (keys  %{$concat_map->{$dest_file}->{'inclusion'}}) {
       print CSSWRITE  "\n/*  CSS Included ${inclusion_item}  time ${exec_time} */\n" ;
-#      print "Adding ${inclusion_item} to ${css_dest_full_path}" , "\n" ;
 
       open (INCLUSION, "< ${inclusion_item} ") || die "Open +r failed on ${inclusion_item}:$!\n" ;
       while (<INCLUSION>) {
@@ -101,3 +138,29 @@ print Dumper($concat_map) , "\n" ;
  
  }
 
+###########################################################################################
+ 
+#-- Process javascripts.
+
+ foreach $dest_file (sort keys % $concat_map_js) {
+    my $js_dest_full_path = 'js/' . $dest_file . '.js' ;
+
+    print "Doing :${js_dest_full_path}:\n" ;
+    open (JSWRITE, ">$js_dest_full_path")  || die "+w failed on ${js_dest_full_path}:$!\n" ;
+
+    foreach my $inclusion_item (keys  %{$concat_map_js->{$dest_file}->{'inclusion'}}) {
+      print JSWRITE  "\n/*  JS Included ${inclusion_item}  time ${exec_time} */\n" ;
+
+      open (INCLUSION, "< ${inclusion_item} ") || die "Open +r failed on ${inclusion_item}:$!\n" ;
+      while (<INCLUSION>) {
+           print CSSWRITE $_ ;
+      }
+      close(INCLUSION) ;
+    }
+    close(JSWRITE) ;
+ 
+ }
+
+###########################################################################################
+#  For debug only ..
+#print Dumper($concat_map) , "\n" ;

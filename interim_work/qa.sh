@@ -1,5 +1,6 @@
 rm -fv css_inclusion_report.txt
 grep Included css/*.css  > css_inclusion_report.txt
+grep Included js/*.css  > css_inclusion_report.txt
 
 
 rm -fv jsp_result.txt
@@ -9,5 +10,5 @@ echo
 echo 
 echo  "------------ ${file} -------------"
 
-egrep "mvaidya|convert" ${file}.converted; 
+egrep "mvaidya|convert" ${file}
 done >> jsp_result.txt
