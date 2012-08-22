@@ -10,5 +10,5 @@ echo
 echo 
 echo  "------------ ${file} -------------"
 
-egrep "mvaidya|convert" ${file}
+egrep -n "mvaidya|convert" ${file}
 done >> jsp_result.txt

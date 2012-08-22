@@ -82,7 +82,7 @@ foreach my $curr_jsp  (@jsp_filelist) {
                 }elsif ($item =~ /(src=)(.*)/) {
 		   $hash_val = $2;
 		   $hash_val =~ s/^\///g;
-		   next if ($2=~//g) ;
+		   next if ($hash_val=~//g) ;
                 }
               }
 
