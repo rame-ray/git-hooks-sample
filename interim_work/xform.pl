@@ -159,11 +159,11 @@ foreach my $curr_jsp  (@jsp_filelist) {
     foreach my $inclusion_item (keys  %{$concat_map_js->{$dest_file}->{'inclusion'}}) {
       print JSWRITE  "\n/*  JS Included ${inclusion_item}  time ${exec_time} */\n" ;
 
-      open (INCLUSION, "< ${inclusion_item} ") || die "Open +r failed on ${inclusion_item}:$!\n" ;
-      while (<INCLUSION>) {
-           print CSSWRITE $_ ;
+      open (JS_INCLUSION, "< ${inclusion_item} ") || die "Open +r failed on ${inclusion_item}:$!\n" ;
+      while (<JS_INCLUSION>) {
+           print JSWRITE $_ ;
       }
-      close(INCLUSION) ;
+      close(JS_INCLUSION) ;
     }
     close(JSWRITE) ;
    
