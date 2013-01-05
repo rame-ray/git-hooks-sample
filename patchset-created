@@ -1,0 +1,89 @@
+#!/usr/bin/python
+
+import pdb 
+import sys
+import re
+import os
+from subprocess import Popen, PIPE
+from optparse  import OptionParser
+
+
+
+
+def validate_jira(jiraID) :
+	return True 
+
+
+result_dict={'bad_commit': False, 'headline_err':"", 'valid_jiras':[], 'invalid_jiras':[], 'final_mesg':None} 
+
+def examine_comment(mesg, option) :
+    commit_lines = mesg.split("\n")
+    #Rule 1 - 1st line must contain commit headline and must start from col 1.
+    
+    line_1_match = re.match("^(\s+|$)", commit_lines[5]) 
+    if line_1_match:
+    	result_dict['headline_err'] = "Headline must begin at 1st line and 1st column"
+    	result_dict['bad_commit'] = True 
+    if len(commit_lines[5]) > 80 :
+    	result_dict['headline_err'] = "Headline length must below 81 chars"
+    	result_dict['bad_commit'] = True 
+
+    
+    for line in commit_lines :
+    	line=line.lstrip() 
+    	if re.search("JiraID:[A-Z]+\-\d+$", line)  :
+    		if validate_jira(line.split(':')[1]) :
+    			result_dict['valid_jiras'].append(line.split(':')[1])
+    		else :
+    			result_dict['invalid_jiras'].append(line.split(':')[1])
+    
+    result_dict['valid_jira_count'] = len(result_dict['valid_jiras']) 
+    result_dict['invalid_jira_count'] = len(result_dict['invalid_jiras']) 
+    
+    if result_dict['invalid_jira_count'] > 0 or \
+    result_dict['valid_jira_count'] == 0:
+    	result_dict['headline_err'] = "\n\nThis commit is rejected due to Reasons \n\n"  \
+            + result_dict['headline_err']   \
+            + "\n\nNo Valid Jira Item Found"
+    	result_dict['bad_commit'] = True 
+
+
+    if result_dict['bad_commit'] == True:
+
+        command_array=['ssh', '-p',  '29418',  '-l',  'forvaidya',  'localhost',
+                       'gerrit', 'review', '--project', option.project,
+                        '--message', "\""+result_dict['headline_err']+"\"" ,
+                       '--verified',  '-1',  '--code-review' , '-1' ,  option.commit]
+        process = Popen(command_array, stdout=PIPE)
+        exit_code = os.waitpid(process.pid, 0)
+
+    
+
+## 
+
+##-- patchset-created --change <change id> --is-draft <boolean> 
+## --change-url <change url> --project <project name> --branch <branch> 
+## --topic <topic> --uploader <uploader> --commit <sha1> --patchset <patchset id>
+def extract_comment(args) :
+    parser = OptionParser() 
+    parser.add_option("--change", dest="change_id") 
+    parser.add_option("--is-draft", dest="is_draft") 
+    parser.add_option("--change-url", dest="change_url") 
+    parser.add_option("--project", dest="project") 
+    parser.add_option("--branch", dest="branch") 
+    parser.add_option("--topic", dest="topic") 
+    parser.add_option("--uploader", dest="uploader") 
+    parser.add_option("--commit", dest="commit") 
+    parser.add_option("--patchset", dest="patchset") 
+
+    (options, args) = parser.parse_args()
+
+    process = Popen(["git", "cat-file", "-p", options.commit], stdout=PIPE)
+    exit_code = os.waitpid(process.pid, 0)
+    commit_mesg = process.communicate()[0]
+    return commit_mesg , options
+#
+
+if __name__ == "__main__" :
+    mesg_tup = extract_comment(sys.argv[1:])
+    examine_comment(mesg_tup[0], mesg_tup[1]) 
