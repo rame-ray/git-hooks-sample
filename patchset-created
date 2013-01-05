@@ -49,6 +49,7 @@ def examine_comment(mesg, option) :
 
 
     if result_dict['bad_commit'] == True:
+        result_dict['headline_err'] = result_dict['headline_err'] + "\n\n*** Automated validation process Failed !! ***" 
 
         command_array=['ssh', '-p',  '29418',  '-l',  'forvaidya',  'localhost',
                        'gerrit', 'review', '--project', option.project,
@@ -56,6 +57,15 @@ def examine_comment(mesg, option) :
                        '--verified',  '-1',  '--code-review' , '-1' ,  option.commit]
         process = Popen(command_array, stdout=PIPE)
         exit_code = os.waitpid(process.pid, 0)
+    else :
+        result_dict['headline_err'] = "\n\n *** Automated validation process OK !! ***" 
+        command_array=['ssh', '-p',  '29418',  '-l',  'forvaidya',  'localhost',
+                       'gerrit', 'review', '--project', option.project,
+                        '--message', "\""+result_dict['headline_err']+"\"" ,
+                       '--verified',  '0',  '--code-review' , '0' ,  option.commit]
+        process = Popen(command_array, stdout=PIPE)
+        exit_code = os.waitpid(process.pid, 0)
+
 
     
 
