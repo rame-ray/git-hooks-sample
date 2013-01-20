@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#update hook / can also pass as pre-receive hook 
+#note: pre-receive - data comes on stdin and not as $1, $2, $3
+
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+
+
+git rev-list   ${oldrev}..${newrev} |while read commit
+do
+    git cat-file -p ${commit} | grep JiraID
+    if [[ $? != 0 ]]
+    then
+       echo ""
+       echo "ERR No JiraID specified for"
+       echo "Commit ${commit}"
+       echo ""
+       exit 1
+
+    fi
+done
